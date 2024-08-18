@@ -1,25 +1,33 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-
-// Load environment variables from .env file
-dotenv.config();
+const connectToDatabase = require('./config/config');
 
 const app = express();
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors()); // Enable CORS for all requests
 app.use(express.json()); // Parse JSON bodies
 
-// Sample route
-app.get('/', (req, res) => {
-  res.send('Welcome to the natsPortfolio API');
-});
+// Connect to MongoDB
+async function startServer() {
+  try {
+    const db = await connectToDatabase();
 
-// Additional routes would go here
+    // Sample route
+    app.get('/', (req, res) => {
+      res.send('Welcome to the natsPortfolio API');
+    });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+    // Additional routes and operations with the database can go here
+
+    // Start the server
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err);
+  }
+}
+
+startServer();
