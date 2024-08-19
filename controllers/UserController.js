@@ -11,9 +11,6 @@ const sendEmail = require('../utils/sendEmail');
 exports.register = async (req, res, next) => {
   const ipAddress = requestIp.getClientIp(req);
   const { name, email, password } = req.body;
-
-  // Add email confirmation links
-
   try {
     if (!name || !email || !password)
       return next(new ErrorResponse('Registration failed', 500));
@@ -22,19 +19,29 @@ exports.register = async (req, res, next) => {
       name,
       email,
       password,
-      isAdmin: false,
-      isConfirmed: false,
       profileImage: '/assets/images/sample.jpg',
       cloudinaryId: '12345',
-      resetPasswordToken: '12334',
-      ipAddress,
+      ipAddress: ipAddress,
       loginCounter: 0,
+      downloadCounter: 0,
       registeredWithGoogle: false,
     });
 
+    const link = `${
+      process.env.MAILER_LOCAL_URL
+    }api/confirm-email/${generateToken(user._id)}`;
+    const message = `<h1>Hi ${name}</h1><p>You have successfully registered with Gary's website.</p><p>Please click the link below to verify your email address.</p><h4>Please note, in order to get full functionality you must confirm your mail address with the link below.</h4></p><p><a href=${link} id='link'>Click here to verify</a></p><p>Thank you Gary.</p>`;
+
+    // Send Email
+    sendEmail({
+      from: process.env.MAILER_FROM,
+      to: email, // change to this when live user.email
+      subject: 'Gary Allin Registration',
+      html: message,
+    });
     res
       .status(200)
-      .json({ success: true, data: `${name} successfully added. ` });
+      .json({ success: true, data: `Email sent successfully ${link}` });
 
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
@@ -81,9 +88,73 @@ exports.login = async (req, res, next) => {
   }
 };
 
+//Google Login
+
 // @description: User has forgotten password Send email with reset link
 // @route: POST /api/forgot-password
 // @access: PUBLIC
+exports.forgotPassword = async (req, res, next) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return next(new ErrorResponse('Email could not be found.', 404));
+
+    try {
+      const resetToken = user.getResetPasswordToken();
+      await user.save();
+      const resetUrl = `${process.env.RESET_PASSWORD_LOCAL_URL}#/password-reset/${resetToken}`;
+      const message = `<h1>You have requested a password reset.</h1><p>Please click on the following link to reset your password.</p><p><a href=${resetUrl} id='link'>Click here to verify</a></p>`;
+      // Send Email
+
+      sendEmail({
+        from: process.env.MAILER_FROM,
+        to: user.email,
+        subject: 'Password Reset Request',
+        html: message,
+      });
+
+      res.status(200).json({ success: true, data: `Email sent successfully` });
+    } catch (error) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save();
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @description: USER ADMIN Password reset
+// @route: PUT /api/resetpassword/:token
+// @access: PUBLIC
+// @description: USER ADMIN Password reset
+// @route: PUT /api/resetpassword/:token
+// @access: PUBLIC
+exports.resetPassword = async (req, res, next) => {
+  const resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) return next(new ErrorResponse('Invalid Reset Token', 400));
+
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+    res
+      .status(200)
+      .json({ success: true, data: 'Password was successfully changed.' });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // @description: USER ADMIN DETAIL UPDATE
 // @route: PUT /api/user/:id
@@ -92,7 +163,3 @@ exports.login = async (req, res, next) => {
 // @description: Get user data of logged in in user
 // @route: GET /api/users/user
 // @access: PRIVATE
-
-// @description: USER ADMIN Password reset
-// @route: PUT /api/resetpassword/:token
-// @access: PUBLIC

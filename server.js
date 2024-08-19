@@ -16,6 +16,7 @@ async function startServer() {
     await connectToDatabase();
     //Routes
     app.use('/api/', require('./routes/UserRoutes'));
+    app.use('/api/', require('./routes/EmailConfirmationLinkRoutes'));
 
     // Start the server
     app.listen(port, () => {
