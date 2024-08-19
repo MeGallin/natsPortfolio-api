@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
 // Load environment variables from .env file
@@ -6,19 +6,18 @@ dotenv.config();
 
 const uri = process.env.MONGODB_URI;
 
-const client = new MongoClient(uri, {});
-
-async function connectToDatabase() {
+const connectToDatabase = async () => {
   try {
-    await client.connect();
+    await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     console.log('Connected to MongoDB Atlas');
-
-    const db = client.db('natsPortfolioDB');
-    return db; // Return the database instance for use elsewhere in the app
   } catch (err) {
-    console.error('Failed to connect to MongoDB', err);
+    console.error('Failed to connect to MongoDB');
+    console.error('Error details:', err.message);
     throw err;
   }
-}
+};
 
 module.exports = connectToDatabase;

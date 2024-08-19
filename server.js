@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config({ path: './.env' });
 const cors = require('cors');
 const connectToDatabase = require('./config/config');
 
@@ -12,14 +13,9 @@ app.use(express.json()); // Parse JSON bodies
 // Connect to MongoDB
 async function startServer() {
   try {
-    const db = await connectToDatabase();
-
-    // Sample route
-    app.get('/', (req, res) => {
-      res.send('Welcome to the natsPortfolio API');
-    });
-
-    // Additional routes and operations with the database can go here
+    await connectToDatabase();
+    //Routes
+    app.use('/api/', require('./routes/UserRoutes'));
 
     // Start the server
     app.listen(port, () => {
