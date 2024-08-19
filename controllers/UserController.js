@@ -43,9 +43,43 @@ exports.register = async (req, res, next) => {
   }
 };
 
+// Generate a secret token for the user
+const generateToken = (id, email) => {
+  return jwt.sign({ id, email }, process.env.JWT_SECRET);
+};
+
+const sendToken = (user, statusCode, res) => {
+  const token = user.getSignedToken();
+  res.status(statusCode).json({ success: true, token, name: user.name });
+};
+
 // @description: USER login
 // @route: POST /api/login
 // @access: Public
+exports.login = async (req, res, next) => {
+  const ipAddress = requestIp.getClientIp(req);
+  const { email, password } = req.body;
+
+  if (!email || !password)
+    return next(new ErrorResponse('Please provide an email and Password', 400));
+
+  try {
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return next(new ErrorResponse('Please provide valid credentials', 401));
+    }
+    const isMatched = await user.matchPasswords(password);
+    if (!isMatched) {
+      return next(new ErrorResponse('Please provide valid credentials', 401));
+    }
+    user.loginCounter = user.loginCounter + 1;
+    user.ipAddress = ipAddress;
+    await user.save();
+    sendToken(user, 200, res);
+  } catch (error) {
+    next(error);
+  }
+};
 
 // @description: User has forgotten password Send email with reset link
 // @route: POST /api/forgot-password
