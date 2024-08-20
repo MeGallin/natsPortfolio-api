@@ -30,7 +30,18 @@ exports.sendContactForm = async (req, res, next) => {
 // @route: GET /api/contacts
 // @access: PRIVATE & ADMIN
 exports.getContacts = async (req, res, next) => {
-  contacts = await ContactFormInformation.find();
-  if (!contacts) return next(new ErrorResponse('Nothing could be found', 500));
-  res.status(200).json({ status: 'success', contacts });
+  try {
+    const contacts = await ContactFormInformation.find();
+    if (!contacts || contacts.length === 0) {
+      return next(new ErrorResponse('Nothing could be found', 404));
+    }
+    res.status(200).json({
+      status: 'success',
+      contacts,
+    });
+  } catch (error) {
+    return next(
+      new ErrorResponse('An error occurred while fetching contacts', 500),
+    );
+  }
 };
