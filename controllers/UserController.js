@@ -127,6 +127,7 @@ exports.forgotPassword = async (req, res, next) => {
 // @description: USER ADMIN Password reset
 // @route: PUT /api/resetpassword/:token
 // @access: PUBLIC
+
 // @description: USER ADMIN Password reset
 // @route: PUT /api/resetpassword/:token
 // @access: PUBLIC
@@ -159,3 +160,38 @@ exports.resetPassword = async (req, res, next) => {
 // @description: USER ADMIN DETAIL UPDATE
 // @route: PUT /api/user/:id
 // @access: Private
+
+// @description: Logged-in User Details
+// @route: GET /api/user
+// @access: protected
+exports.getUserDetails = async (req, res, next) => {
+  try {
+    // Select the desired fields from the user document
+    const userDetails = await User.findById(req.user.id).select(
+      'name email isAdmin isConfirmed profileImage cloudinaryId ipAddress loginCounter registeredWithGoogle',
+    );
+
+    if (!userDetails) {
+      return next(new ErrorResponse('Invalid, no user details found', 404));
+    }
+
+    res.status(200).json({
+      status: 'success',
+      userDetails: {
+        name: userDetails.name,
+        email: userDetails.email,
+        isAdmin: userDetails.isAdmin,
+        isConfirmed: userDetails.isConfirmed,
+        profileImage: userDetails.profileImage,
+        cloudinaryId: userDetails.cloudinaryId,
+        ipAddress: userDetails.ipAddress,
+        loginCounter: userDetails.loginCounter,
+        registeredWithGoogle: userDetails.registeredWithGoogle,
+      },
+    });
+  } catch (error) {
+    return next(
+      new ErrorResponse('An error occurred while fetching user details', 500),
+    );
+  }
+};
