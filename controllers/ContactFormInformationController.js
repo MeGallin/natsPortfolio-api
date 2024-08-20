@@ -25,3 +25,12 @@ exports.sendContactForm = async (req, res, next) => {
     next(error);
   }
 };
+
+// @description: Get information of contact form submissions
+// @route: GET /api/contacts
+// @access: PRIVATE & ADMIN
+exports.getContacts = async (req, res, next) => {
+  contacts = await ContactFormInformation.find();
+  if (!contacts) return next(new ErrorResponse('Nothing could be found', 500));
+  res.status(200).json({ status: 'success', contacts });
+};

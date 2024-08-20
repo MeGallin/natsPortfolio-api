@@ -159,7 +159,3 @@ exports.resetPassword = async (req, res, next) => {
 // @description: USER ADMIN DETAIL UPDATE
 // @route: PUT /api/user/:id
 // @access: Private
-
-// @description: Get user data of logged in in user
-// @route: GET /api/users/user
-// @access: PRIVATE
