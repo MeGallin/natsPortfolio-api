@@ -88,6 +88,23 @@ exports.login = async (req, res, next) => {
   }
 };
 
+// @description: USER ADMIN DETAIL UPDATE
+// @route: PUT /api/user/:id
+// @access: Private
+exports.updateDetails = async (req, res, next) => {
+  const user = await User.findById(req.params.id);
+  try {
+    if (!user) return new ErrorResponse('User not found', 400);
+
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    await user.save();
+    res.status(200).json({
+      success: true,
+      data: 'Your details have been successfully changed.',
+    });
+  } catch (error) {}
+};
 //Google Login
 
 // @description: User has forgotten password Send email with reset link
@@ -156,10 +173,6 @@ exports.resetPassword = async (req, res, next) => {
     next(error);
   }
 };
-
-// @description: USER ADMIN DETAIL UPDATE
-// @route: PUT /api/user/:id
-// @access: Private
 
 // @description: Logged-in User Details
 // @route: GET /api/user
