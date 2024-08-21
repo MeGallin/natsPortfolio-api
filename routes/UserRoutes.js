@@ -5,7 +5,7 @@ const {
   login,
   googleLogin,
   getUserDetails,
-  userUpdateAdminDetails,
+  updateDetails,
   forgotPassword,
   resetPassword,
   userDownloadCounter,
@@ -17,5 +17,6 @@ router.route('/login').post(login);
 router.route('/forgot-password').post(forgotPassword);
 router.route('/reset-password/:token').put(resetPassword);
 router.route('/user-details').get(protect, getUserDetails);
+router.route('/user-update/:id').patch(protect, updateDetails);
 
 module.exports = router;
