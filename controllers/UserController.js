@@ -191,6 +191,7 @@ exports.getUserDetails = async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       userDetails: {
+        id: userDetails.id,
         name: userDetails.name,
         email: userDetails.email,
         isAdmin: userDetails.isAdmin,
