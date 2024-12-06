@@ -5,6 +5,7 @@ exports.pageHits = async (req, res, next) => {
   const ipAddress = requestIp.getClientIp(req);
   const hits = await PageHits.find();
   // Possibly make it unique
+  console.log(hits);
   const newIpAddress = new PageHits({
     ipAddress,
   });
