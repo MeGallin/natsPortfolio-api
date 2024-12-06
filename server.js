@@ -19,6 +19,7 @@ async function startServer() {
     app.use('/api/', require('./routes/UserRoutes'));
     app.use('/api/', require('./routes/EmailConfirmationLinkRoutes'));
     app.use('/api/', require('./routes/ContactFormInformationRoutes'));
+    app.use('/api/', require('./routes/GalleryImagesRoutes'));
 
     // Start the server
     app.listen(port, () => {
