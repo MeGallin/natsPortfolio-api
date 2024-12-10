@@ -2,7 +2,7 @@ const GalleryImage = require('../models/GalleryImagesModel');
 const cloudinary = require('../config/cloudinaryConfig');
 const fs = require('fs');
 const { validationResult } = require('express-validator');
-const path = require('path');
+const ErrorResponse = require('../utils/errorResponse');
 
 /**
  * @description Uploads an image to Cloudinary and stores its metadata in the database
@@ -120,3 +120,59 @@ exports.validateImageUpload = [
   body('description').notEmpty().withMessage('Description is required'),
   body('by').notEmpty().withMessage('Author is required'),
 ];
+
+/**
+ * @description Delete image and notes
+ * @route GET /api/gallery-image-delete/:id
+ * @access Admin
+ */
+exports.deleteImageController = async (req, res, next) => {
+  try {
+    // Find the image by ID
+    const image = await GalleryImage.findById(req.params.id);
+
+    // Check if the image exists
+    if (!image) {
+      return next(new ErrorResponse('No image found with this ID!', 404));
+    }
+
+    // Extract the public ID from the Cloudinary URL
+    const publicId = image.url.split('/').pop().split('.')[0]; // Example extraction
+    if (!publicId) {
+      return next(
+        new ErrorResponse(
+          'Could not extract public ID from Cloudinary URL',
+          400,
+        ),
+      );
+    }
+
+    // Delete the image from Cloudinary
+    await cloudinary.uploader.destroy(
+      `uploads/${publicId}`,
+      (error, result) => {
+        if (error) {
+          console.error('Cloudinary deletion error:', error);
+          return next(
+            new ErrorResponse('Failed to delete image from Cloudinary', 500),
+          );
+        }
+        console.log('Cloudinary deletion result:', result);
+      },
+    );
+
+    // Remove the image from the database
+    await GalleryImage.deleteOne({ _id: req.params.id });
+
+    // Send success response
+    res.status(200).json({
+      success: true,
+      message: 'Image successfully deleted!',
+    });
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    return next(
+      new ErrorResponse('An error occurred while deleting the image', 500),
+    );
+  }
+};
