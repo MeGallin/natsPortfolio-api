@@ -34,7 +34,7 @@ exports.uploadImageController = async (req, res) => {
       return res.status(400).json({ message: 'File size exceeds 2MB limit' });
     }
 
-    const { title, description, by } = req.body;
+    const { title, description, by, col, row } = req.body;
 
     // Upload the file to Cloudinary
     const result = await cloudinary.uploader.upload(req.file.path, {
@@ -49,6 +49,8 @@ exports.uploadImageController = async (req, res) => {
       title,
       description,
       by,
+      col,
+      row,
       url: result.secure_url,
     });
 
@@ -60,6 +62,8 @@ exports.uploadImageController = async (req, res) => {
         title: savedImage.title,
         description: savedImage.description,
         by: savedImage.by,
+        col: 2,
+        row: 2,
         url: savedImage.url,
       },
     });
