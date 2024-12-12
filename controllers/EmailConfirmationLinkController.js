@@ -1,6 +1,6 @@
 const User = require('../models/UserModel');
 const jwt = require('jsonwebtoken');
-const ErrorResponse = require('../utils/ErrorResponse');
+const ErrorResponse = require('../utils/errorResponse');
 
 // @description: Confirmation Email
 // @route: GET /confirm-email/:token

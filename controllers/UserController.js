@@ -1,9 +1,9 @@
 const crypto = require('crypto');
 const User = require('../models/UserModel');
-const ErrorResponse = require('../utils/ErrorResponse');
+const ErrorResponse = require('../utils/errorResponse');
 const jwt = require('jsonwebtoken');
 const requestIp = require('request-ip');
-const sendEmail = require('../utils/SendEmail');
+const sendEmail = require('../utils/sendEmail');
 
 // @description: Register new user
 // @route: POST /api/register

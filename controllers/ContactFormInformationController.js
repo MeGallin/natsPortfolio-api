@@ -1,5 +1,5 @@
-const ErrorResponse = require('../utils/ErrorResponse');
-const sendEmail = require('../utils/SendEmail');
+const ErrorResponse = require('../utils/errorResponse');
+const sendEmail = require('../utils/sendEmail');
 const ContactFormInformation = require('../models/ContactFormInformationModel');
 
 exports.sendContactForm = async (req, res, next) => {
