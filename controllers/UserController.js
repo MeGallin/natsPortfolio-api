@@ -3,7 +3,7 @@ const User = require('../models/UserModel');
 const ErrorResponse = require('../utils/ErrorResponse');
 const jwt = require('jsonwebtoken');
 const requestIp = require('request-ip');
-const sendEmail = require('../utils/sendEmail');
+const sendEmail = require('../utils/SendEmail');
 
 // @description: Register new user
 // @route: POST /api/register
