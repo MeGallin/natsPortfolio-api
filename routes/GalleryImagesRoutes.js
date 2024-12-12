@@ -5,7 +5,7 @@ const {
   galleryImageController,
   deleteImageController,
 } = require('../controllers/GalleryImagesController');
-const { protect } = require('../middleWare/authMiddleWare');
+const { protect } = require('../middleware/AuthMiddleware');
 
 // Route setup
 const router = express.Router();

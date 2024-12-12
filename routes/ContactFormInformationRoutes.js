@@ -4,7 +4,7 @@ const {
   sendContactForm,
   getContacts,
 } = require('../controllers/ContactFormInformationController');
-const { protect, admin } = require('../middleWare/authMiddleWare');
+const { protect, admin } = require('../middleware/AuthMiddleware');
 
 router.route('/contact-form').post(sendContactForm);
 router.route('/contacts').get(protect, admin, getContacts);

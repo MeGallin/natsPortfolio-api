@@ -3,14 +3,12 @@ const router = express.Router();
 const {
   register,
   login,
-  googleLogin,
   getUserDetails,
   updateDetails,
   forgotPassword,
   resetPassword,
-  userDownloadCounter,
 } = require('../controllers/UserController');
-const { protect } = require('../middleWare/authMiddleWare');
+const { protect } = require('../middleware/AuthMiddleware');
 
 router.route('/register').post(register);
 router.route('/login').post(login);
