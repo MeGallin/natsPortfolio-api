@@ -2,7 +2,7 @@ const GalleryImage = require('../models/GalleryImagesModel');
 const cloudinary = require('../config/cloudinaryConfig');
 const fs = require('fs');
 const { validationResult } = require('express-validator');
-const ErrorResponse = require('../utils/errorResponse');
+const ErrorResponse = require('../utils/ErrorResponse');
 
 /**
  * @description Uploads an image to Cloudinary and stores its metadata in the database
