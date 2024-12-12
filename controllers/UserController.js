@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const User = require('../models/UserModel');
-const ErrorResponse = require('../utils/errorResponse');
+const ErrorResponse = require('../utils/ErrorResponse');
 const jwt = require('jsonwebtoken');
 const requestIp = require('request-ip');
 const sendEmail = require('../utils/sendEmail');
