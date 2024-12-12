@@ -21,11 +21,11 @@ const GalleryImagesSchema = new mongoose.Schema(
     },
     col: {
       type: Number,
-      default: 2,
+      default: 1,
     },
     row: {
       type: Number,
-      default: 2,
+      default: 1,
     },
   },
   {
