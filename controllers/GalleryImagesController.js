@@ -24,7 +24,7 @@ exports.uploadImageController = async (req, res) => {
 
     // Validate file type and size
     const allowedTypes = ['image/jpeg', 'image/png'];
-    const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
     if (!allowedTypes.includes(req.file.mimetype)) {
       return res.status(400).json({ message: 'Unsupported file format' });
