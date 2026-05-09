@@ -9,6 +9,8 @@ const ErrorResponse = require('../utils/ErrorResponse');
  * @access Public
  */
 exports.uploadImageController = async (req, res) => {
+  let uploadedPublicId;
+
   try {
     // Check if file is uploaded
     if (!req.file) {
@@ -33,6 +35,7 @@ exports.uploadImageController = async (req, res) => {
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: 'uploads',
     });
+    uploadedPublicId = result.public_id;
 
     // Remove the file from local storage after upload
     await fs.promises.unlink(req.file.path);
@@ -45,6 +48,7 @@ exports.uploadImageController = async (req, res) => {
       col,
       row,
       url: result.secure_url,
+      cloudinaryId: result.public_id,
     });
 
     const savedImage = await newImage.save();
@@ -55,14 +59,24 @@ exports.uploadImageController = async (req, res) => {
         title: savedImage.title,
         description: savedImage.description,
         by: savedImage.by,
-        col: 2,
-        row: 2,
+        id: savedImage.id,
+        col: savedImage.col,
+        row: savedImage.row,
         url: savedImage.url,
+        cloudinaryId: savedImage.cloudinaryId,
       },
     });
   } catch (error) {
+    if (req.file?.path) {
+      await fs.promises.unlink(req.file.path).catch(() => {});
+    }
+
+    if (uploadedPublicId) {
+      await cloudinary.uploader.destroy(uploadedPublicId).catch(() => {});
+    }
+
     console.error('Error uploading image:', error);
-    res.status(500).json({ message: 'Internal server error', error });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -129,8 +143,11 @@ exports.deleteImageController = async (req, res, next) => {
       return next(new ErrorResponse('No image found with this ID!', 404));
     }
 
-    // Extract the public ID from the Cloudinary URL
-    const publicId = image.url.split('/').pop().split('.')[0]; // Example extraction
+    // Extract the public ID from the stored Cloudinary metadata or URL fallback
+    const fallbackPublicId = image.url
+      ? `uploads/${image.url.split('/').pop().split('.')[0]}`
+      : null;
+    const publicId = image.cloudinaryId || fallbackPublicId;
     if (!publicId) {
       return next(
         new ErrorResponse(
@@ -141,18 +158,11 @@ exports.deleteImageController = async (req, res, next) => {
     }
 
     // Delete the image from Cloudinary
-    await cloudinary.uploader.destroy(
-      `uploads/${publicId}`,
-      (error, result) => {
-        if (error) {
-          console.error('Cloudinary deletion error:', error);
-          return next(
-            new ErrorResponse('Failed to delete image from Cloudinary', 500),
-          );
-        }
-        console.log('Cloudinary deletion result:', result);
-      },
-    );
+    const cloudinaryResult = await cloudinary.uploader.destroy(publicId);
+
+    if (cloudinaryResult.result === 'not found') {
+      return next(new ErrorResponse('Image was not found in Cloudinary', 404));
+    }
 
     // Remove the image from the database
     await GalleryImage.deleteOne({ _id: req.params.id });

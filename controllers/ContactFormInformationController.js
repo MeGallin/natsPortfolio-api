@@ -1,6 +1,7 @@
 const ErrorResponse = require('../utils/ErrorResponse');
 const sendEmail = require('../utils/SendEmail');
 const ContactFormInformation = require('../models/ContactFormInformationModel');
+const escapeHtml = require('../utils/EscapeHtml');
 
 exports.sendContactForm = async (req, res, next) => {
   const { name, email, message } = req.body;
@@ -12,7 +13,9 @@ exports.sendContactForm = async (req, res, next) => {
 
     await ContactFormInformation.create({ name, email, message });
 
-    const text = `<h1>Hi ${name}</h1><p>Thank you for your enquiry</p><p>This is what you sent:</p><h2>${message}</h2><h4>I will be in contact with in due course.</h4><p>Thank you.</p><h3>Gary</h3>`;
+    const safeName = escapeHtml(name);
+    const safeMessage = escapeHtml(message);
+    const text = `<h1>Hi ${safeName}</h1><p>Thank you for your enquiry</p><p>This is what you sent:</p><h2>${safeMessage}</h2><h4>I will be in contact within due course.</h4><p>Thank you.</p><h3>Gary</h3>`;
 
     // Send Email
     await sendEmail({

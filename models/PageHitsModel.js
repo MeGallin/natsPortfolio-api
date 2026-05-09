@@ -5,7 +5,7 @@ const PageHitsSchema = mongoose.Schema(
     ipAddress: { type: String },
   },
   {
-    timestamp: true,
+    timestamps: true,
   },
 );
 

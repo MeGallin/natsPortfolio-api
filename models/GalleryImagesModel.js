@@ -19,6 +19,9 @@ const GalleryImagesSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    cloudinaryId: {
+      type: String,
+    },
     col: {
       type: Number,
       default: 1,

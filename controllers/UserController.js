@@ -4,6 +4,7 @@ const ErrorResponse = require('../utils/ErrorResponse');
 const jwt = require('jsonwebtoken');
 const requestIp = require('request-ip');
 const sendEmail = require('../utils/SendEmail');
+const escapeHtml = require('../utils/EscapeHtml');
 
 // @description: Register new user
 // @route: POST /api/register
@@ -30,7 +31,9 @@ exports.register = async (req, res, next) => {
     const link = `${
       process.env.MAILER_LOCAL_URL
     }api/confirm-email/${generateToken(user._id)}`;
-    const message = `<h1>Hi ${name}</h1><p>You have successfully registered with Gary's website.</p><p>Please click the link below to verify your email address.</p><h4>Please note, in order to get full functionality you must confirm your mail address with the link below.</h4></p><p><a href=${link} id='link'>Click here to verify</a></p><p>Thank you Gary.</p>`;
+    const safeName = escapeHtml(name);
+    const safeLink = escapeHtml(link);
+    const message = `<h1>Hi ${safeName}</h1><p>You have successfully registered with Gary's website.</p><p>Please click the link below to verify your email address.</p><h4>Please note, in order to get full functionality you must confirm your mail address with the link below.</h4><p><a href="${safeLink}" id="link">Click here to verify</a></p><p>Thank you Gary.</p>`;
 
     // Send Email
     await sendEmail({
@@ -40,9 +43,10 @@ exports.register = async (req, res, next) => {
       html: message,
     });
 
-    res
-      .status(200)
-      .json({ success: true, data: `Email sent successfully ${link}` });
+    res.status(200).json({
+      success: true,
+      data: 'Registration successful. Please check your email to confirm your account.',
+    });
 
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
@@ -135,7 +139,8 @@ exports.forgotPassword = async (req, res, next) => {
       const resetToken = user.getResetPasswordToken();
       await user.save();
       const resetUrl = `${process.env.RESET_PASSWORD_LOCAL_URL}#/password-reset/${resetToken}`;
-      const message = `<h1>You have requested a password reset.</h1><p>Please click on the following link to reset your password.</p><p><a href=${resetUrl} id='link'>Click here to verify</a></p>`;
+      const safeResetUrl = escapeHtml(resetUrl);
+      const message = `<h1>You have requested a password reset.</h1><p>Please click on the following link to reset your password.</p><p><a href="${safeResetUrl}" id="link">Click here to verify</a></p>`;
       // Send Email
 
       await sendEmail({
