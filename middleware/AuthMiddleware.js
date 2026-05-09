@@ -17,10 +17,9 @@ exports.protect = async (req, res, next) => {
       if (!user) {
         return next(new ErrorResponse('No user found with this ID', 404));
       }
-      next();
+      return next();
     } catch (error) {
-      res.status(401);
-      new ErrorResponse('Token has failed', 401);
+      return next(new ErrorResponse('Token has failed', 401));
     }
   }
 

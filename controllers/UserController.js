@@ -33,12 +33,13 @@ exports.register = async (req, res, next) => {
     const message = `<h1>Hi ${name}</h1><p>You have successfully registered with Gary's website.</p><p>Please click the link below to verify your email address.</p><h4>Please note, in order to get full functionality you must confirm your mail address with the link below.</h4></p><p><a href=${link} id='link'>Click here to verify</a></p><p>Thank you Gary.</p>`;
 
     // Send Email
-    sendEmail({
+    await sendEmail({
       from: process.env.MAILER_FROM,
-      to: email, // change to this when live user.email
+      to: email,
       subject: 'Gary Allin Registration',
       html: message,
     });
+
     res
       .status(200)
       .json({ success: true, data: `Email sent successfully ${link}` });
@@ -92,18 +93,32 @@ exports.login = async (req, res, next) => {
 // @route: PUT /api/user/:id
 // @access: Private
 exports.updateDetails = async (req, res, next) => {
-  const user = await User.findById(req.params.id);
   try {
-    if (!user) return new ErrorResponse('User not found', 400);
+    const isOwnAccount = req.user.id === req.params.id;
+
+    if (!isOwnAccount && !req.user.isAdmin) {
+      return next(
+        new ErrorResponse('You are not authorized to update this user', 403),
+      );
+    }
+
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return next(new ErrorResponse('User not found', 404));
+    }
 
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
     await user.save();
-    res.status(200).json({
+
+    return res.status(200).json({
       success: true,
       data: 'Your details have been successfully changed.',
     });
-  } catch (error) {}
+  } catch (error) {
+    return next(error);
+  }
 };
 //Google Login
 
@@ -123,7 +138,7 @@ exports.forgotPassword = async (req, res, next) => {
       const message = `<h1>You have requested a password reset.</h1><p>Please click on the following link to reset your password.</p><p><a href=${resetUrl} id='link'>Click here to verify</a></p>`;
       // Send Email
 
-      sendEmail({
+      await sendEmail({
         from: process.env.MAILER_FROM,
         to: user.email,
         subject: 'Password Reset Request',
@@ -135,6 +150,7 @@ exports.forgotPassword = async (req, res, next) => {
       user.resetPasswordToken = undefined;
       user.resetPasswordExpire = undefined;
       await user.save();
+      return next(error);
     }
   } catch (error) {
     next(error);

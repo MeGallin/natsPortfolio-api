@@ -1,7 +1,6 @@
 const GalleryImage = require('../models/GalleryImagesModel');
 const cloudinary = require('../config/cloudinaryConfig');
 const fs = require('fs');
-const { validationResult } = require('express-validator');
 const ErrorResponse = require('../utils/ErrorResponse');
 
 /**
@@ -11,12 +10,6 @@ const ErrorResponse = require('../utils/ErrorResponse');
  */
 exports.uploadImageController = async (req, res) => {
   try {
-    // Validate input
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     // Check if file is uploaded
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
